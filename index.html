@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Web Speech Translation</title>
+    <style>
+        div {
+            display: inline-block;
+        }
+    </style>
+</head>
+    <body>
+
+    <h2>Webkit recognition API with translate API and google text-to-speech API.<br />Only chrome >= 25.</h2>
+
+        <div>
+            Sources :
+            <select onchange="sts.setSourceLanguage(source.value)" id="source"></select>
+        </div>
+
+        <button onclick="invert(); return false;"><-></button>
+
+        <div>
+            Target :
+            <select onchange="sts.setTargetLanguage(target.value)" id="target"></select>
+        </div>
+
+        <br />
+        <br />
+    <form action="#" id="c-form" onsubmit="sts.translate(q.value); return false;">
+        <input type="search" id="q" name="q" size=60 /><br />
+        <input type="search" id="r" name="r" size=60 />
+        <input type="submit" value="Translate" onclick="sts.translate(q.value)">
+        <input type="button" id="startSpeech" value="Speech" onclick="sts.start()"><br />
+    </form>
+
+    <br />
+    <iframe src="audio.php" width="500" id="text-to-speech" height="150" frameborder="0"></iframe>
+
+
+
+
+    <script src="jquery.js"></script>
+    <script src="SpeechToTranslateSpeech.js"></script>
+    <script type="text/javascript">
+
+        var DEFAULTS = ['fr', 'en'];
+
+        var LANGS = [
+            ['ar', 'Arabic'],
+            ['fr', 'French'],
+            ['en', 'English'],
+            ['it', 'Italian'],
+            ['es', 'Spanish'],
+            ['ru', 'Russian'],
+            ['zh', 'Chinese'],
+            ['vi', 'Vietnamese'],
+            ['ja', 'Japan']
+        ];
+
+        for(var index = 0, length = LANGS.length; index<length; index++){
+            source.appendChild(option.call(null, LANGS[index], LANGS[index][0] === DEFAULTS[0]));
+            target.appendChild(option.call(null, LANGS[index], LANGS[index][0] === DEFAULTS[1]));
+        }
+
+        function option(lang, selected){
+            var o = document.createElement('option');
+
+            o.value = lang[0];
+            o.innerText = lang[1];
+            o.selected = selected ? "selected" : "";
+
+            return o;
+        }
+
+        function invert(){
+            var s = source.value;
+            var t = target.value;
+            var sv = q.value;
+            var rv = r.value;
+
+            source.value = t;
+            target.value = s;
+
+            q.value = rv;
+            r.value = sv;
+
+            source.onchange();
+            target.onchange();
+
+            sts.translate(rv);
+        }
+
+        var sts = new SpeechToTranslateSpeech('AIzaSyAS1mkkfxDKvh6P5Zaj6sNR2f5nXE2AI9c', 'fr', 'en');
+
+        sts.onNotSupported = function(){
+             startSpeech.disabled = true;
+             startSpeech.value = 'Speech not supported. Use chrome >= 25.';
+        };
+
+        sts.onStart = function(){
+            startSpeech.style.color = "orange";
+        };
+
+        sts.onEnd = function(){
+            startSpeech.style.color = "black";
+        };
+
+        sts.onTranslated = function(text, original){
+          document.getElementById('q').value = original;
+          document.getElementById('r').value = text;
+        };
+
+        sts.onSpeechReady = function(url){
+
+            var src = "audio.php?query="+encodeURIComponent(url)
+
+            document.getElementById('text-to-speech').src = src;
+        }
+
+    </script>
+
+</body>
+</html>
